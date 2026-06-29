@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -67,22 +71,21 @@ userSchema.methods.generateAccessToken = function () {
     process.env.JWT_ACCESS_SECRET,
     {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-    }
+    },
   );
 };
 
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
-      userId: this._id
+      userId: this._id,
     },
     process.env.JWT_REFRESH_SECRET,
     {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-    }
+    },
   );
 };
-
 
 const User = mongoose.model("User", userSchema);
 

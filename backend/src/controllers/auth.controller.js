@@ -21,12 +21,24 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  const result = await loginUserService(req.body);
+  const { user, accessToken, refreshToken } = await loginUserService(req.body);
+
+  const cookieOptions = {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
 
   return res
     .status(HTTP_STATUS.OK)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
-      new ApiResponse(HTTP_STATUS.OK, result, "User logged in successfully"),
+      new ApiResponse(
+        HTTP_STATUS.OK,
+        { user, accessToken },
+        "User logged in successfully",
+      ),
     );
 });
 

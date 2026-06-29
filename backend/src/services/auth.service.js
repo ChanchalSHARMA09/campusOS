@@ -32,12 +32,14 @@ const registerUserService = async (userData) => {
 };
 
 const loginUserService = async (userData) => {
-  
   const { email, password } = userData;
 
-  if(!email || !password){
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email and password are required.");
-  };
+  if (!email || !password) {
+    throw new ApiError(
+      HTTP_STATUS.BAD_REQUEST,
+      "Email and password are required.",
+    );
+  }
 
   const normalizedEmail = email.trim().toLowerCase();
 
@@ -53,9 +55,19 @@ const loginUserService = async (userData) => {
     throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid email or password.");
   }
 
- const loggedInUser = await UserRepository.findById(user._id); 
+  const accessToken = user.generateAccessToken();
 
- return loggedInUser;
+  const refreshToken = user.generateRefreshToken();
+
+  await UserRepository.updateRefreshToken(user._id, refreshToken);
+
+  const loggedInUser = await UserRepository.findById(user._id);
+
+  return {
+    user: loggedInUser,
+    accessToken,
+    refreshToken,
+  };
 };
 
 export { registerUserService, loginUserService };
